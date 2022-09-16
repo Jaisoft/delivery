@@ -1,0 +1,7 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: pipeline-hello-run
+spec:
+  pipelineRef:
+    name: pipeline-hello

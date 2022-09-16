@@ -1,0 +1,54 @@
+pipeline {
+  
+    agent any
+
+
+  
+    stages{
+  
+      stage('Greetings'){
+    
+          steps{
+                echo 'Hello World'
+               }
+                        }
+    
+    
+      stage ('Build') {
+          
+            steps{
+          
+                  script {
+                    
+                    def mvnHome = tool 'Maven 3.8.4'
+                   
+                    
+                     sh "'${mvnHome}/bin/mvn' -version"
+                       
+                       
+                     sh "'${mvnHome}/bin/mvn' clean package"
+                        
+                         }
+                  }
+           
+                       }
+
+
+      stage('Deploy') {
+                steps {
+
+                     script {
+
+                       kubernetesDeploy(configs: "deployment.yaml", kubeconfigId: "kubeconfig-id")
+
+
+                             }
+
+                       }
+                       }
+
+
+   }
+  
+   
+}

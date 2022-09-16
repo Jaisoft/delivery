@@ -1,0 +1,37 @@
+pipeline {
+
+       agent any
+stages {
+          stage ("Hello") {
+             steps{
+               script {
+                     
+                     echo "Hello World"
+                    
+                      }
+                   }
+               }
+
+          stage('Groovy') {
+            steps {
+                withGroovy(tool:"3.0.8"){
+                    sh "groovy --version"
+                }
+            }
+        }
+
+
+
+          stage ("Hello World") {
+             steps{
+               script {
+                     
+                     sh "groovy hello-world.groovy"
+                     
+                      }
+                   }
+               }
+           
+
+  }
+}

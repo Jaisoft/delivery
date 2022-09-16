@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment-blue
+spec:
+  selector:
+    matchLabels:
+      app: springboot-blue
+      tier: backend
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: springboot-blue
+        tier: backend
+        version: green
+    spec:
+      containers:
+        - name: springboot-container
+          image: springboot-image:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: service-blue
+  labels:
+    app: springboot-blue
+    version: blue
+spec:
+  selector:
+    app: springboot-blue
+    tier: backend
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30000
+  type: NodePort
+

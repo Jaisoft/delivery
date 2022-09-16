@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-minikube-deployment-green
+spec:
+  selector:
+    matchLabels:
+      app: springboot-minikube-green
+      tier: backend
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: springboot-minikube-green
+        tier: backend
+        version: green
+        #environment: prod
+        
+    spec:
+      containers:
+        - name: springboot-minikube-blue-green-container
+          image: springboot-minikube-blue-green-image:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: springboot-minikube-service-green
+  labels:
+    app: springboot-minikube-green
+    version: green
+    #environment: prod
+    
+spec:
+  selector:
+    app: springboot-minikube-green
+    tier: backend
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30001
+  type: NodePort

@@ -1,0 +1,128 @@
+podTemplate(yaml: '''
+              apiVersion: v1
+              kind: Pod
+              spec:
+                containers:
+                - name: docker
+                  image: docker:19.03.15
+                  command:
+                  - sleep
+                  args:
+                  - 99d
+                  volumeMounts:
+                  - name: dockersock
+                    mountPath: /var/run/docker.sock          
+                - name: maven
+                  image: maven:3.8.1-jdk-11
+                  command:
+                  - sleep
+                  args:
+                  - 99d
+                  volumeMounts:
+                  - name: maven-repo
+                    mountPath: /root/.m2/repository
+                - name: kubectl
+                  image: bitnami/kubectl:latest
+                  command:
+                  - sleep
+                  args:
+                  - 99d
+                  tty: true
+                  securityContext:
+                    runAsUser: 0      
+                volumes:
+                - name: dockersock
+                  hostPath:
+                    path: /var/run/docker.sock
+                - name: maven-repo
+                  hostPath:
+                    path: /root/.m2/repository''') 
+{
+
+properties(
+    [
+        buildDiscarder(
+            logRotator(
+                daysToKeepStr: '7',
+                numToKeepStr: '20'
+            )
+        )
+    ]
+)
+
+ node(POD_LABEL) 
+ {  
+
+   stage('Clone a repository') 
+      {
+      git url:'https://github.com/Jaisoft/springboot-jenkins-kubernetes-poc.git', branch:"main"
+      
+   
+      }
+
+  stage ('Build a jar') 
+                  {
+                
+                   container('maven') 
+                    {
+
+                        sh "pwd"
+                        sh "mvn clean package"
+
+
+                        sh "ls -la /home/jenkins/agent/workspace/springboot-jenkins-kubernetes-poc/target"
+              
+                        
+                      }
+                       
+                     }
+
+
+    
+   
+    stage('Build a Docker image') 
+    {
+          
+          container('docker') 
+          {
+              sh "docker build . -t jaisoft/springboot:latest"
+              //sh 'docker image build . --file Dockerfile --tag jaisoft/springboot:latest'
+          }
+    }
+
+    stage('Push a Docker image') 
+    {
+      container('docker') 
+        {
+          withCredentials([usernamePassword(credentialsId:'dockerhub-user-pass', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR')]) 
+            {
+        
+             sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login --username $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+            }
+          sh "docker image push jaisoft/springboot:latest"
+          
+          }
+     } 
+
+     stage('Deployment') 
+                {
+                  container('kubectl') 
+
+                  
+
+
+                  {
+
+                     withCredentials([file(credentialsId:'kubeconfig-kubenetes', variable: 'pepe')]) 
+            {
+                  sh "echo 'hello world'"
+                  sh "mkdir -p \$HOME/.kube && cp $pepe \$HOME/.kube/config"
+                  sh "ls -lash \$HOME/.kube"
+                  sh "kubectl apply -f green-deployment.yml"
+            }
+
+                  
+                  }
+                }
+  }
+}
