@@ -1,2 +1,0 @@
-xonsh hello-world.xsh
-
