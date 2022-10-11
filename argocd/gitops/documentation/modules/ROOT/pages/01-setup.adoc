@@ -1,0 +1,248 @@
+= Setup
+include::_attributes.adoc[]
+
+[#prerequisite]
+== Prerequisite CLI Tools
+
+The following CLI tools are required for running the exercises in this tutorial. 
+Please have them installed and configured before you get started with any of the tutorial chapters.
+
+[cols="4*^,4*.",options="header,+attributes"]
+|===
+|**Tool**|**macOS**|**Fedora**|**Windows**
+
+| `Git`
+| https://git-scm.com/download/mac[Download]
+| https://git-scm.com/download/linux[Download]
+| https://git-scm.com/download/win[Download]
+
+| `Docker`
+| https://docs.docker.com/docker-for-mac/install[Docker for Mac]
+| `dnf install podman podman-docker`
+| https://docs.docker.com/docker-for-windows/install[Docker for Windows]
+
+| `VirtualBox`
+| https://download.virtualbox.org/virtualbox/6.1.6/VirtualBox-6.1.6-137129-OSX.dmg[Download]
+| https://www.virtualbox.org/wiki/Linux_Downloads[Download]
+| https://download.virtualbox.org/virtualbox/6.1.6/VirtualBox-6.1.6-137129-Win.exe[Download]
+
+| https://kubernetes.io/docs/tasks/tools/install-minikube[Minikube] {minikube-version}
+| https://github.com/kubernetes/minikube/releases/download/{minikube-version}/minikube-darwin-amd64[Download]
+| https://github.com/kubernetes/minikube/releases/download/{minikube-version}/minikube-linux-amd64[Download]
+| https://github.com/kubernetes/minikube/releases/download/{minikube-version}/minikube-windows-amd64.exe[Download]
+
+| `kubectl {kubernetes-version}`
+| https://storage.googleapis.com/kubernetes-release/release/{kubernetes-version}/bin/darwin/amd64/kubectl[Download]
+| https://storage.googleapis.com/kubernetes-release/release/{kubernetes-version}/bin/linux/amd64/kubectl[Download]
+| https://storage.googleapis.com/kubernetes-release/release/{kubernetes-version}/bin/windows/amd64/kubectl.exe[Download]
+
+| `argocd {argocd-version}`
+| https://github.com/argoproj/argo-cd/releases/download/{argocd-version}/argocd-darwin-amd64[Download]
+| https://github.com/argoproj/argo-cd/releases/download/{argocd-version}/argocd-linux-amd64[Download]
+| https://github.com/argoproj/argo-cd/releases/download/{argocd-version}/argocd-windows-amd64.exe[Download]
+
+| `kustomize {kustomize-version}`
+| https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_{kustomize-version}_darwin_amd64.tar.gz[Download]
+| https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_{kustomize-version}_linux_amd64.tar.gz[Download]
+| https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_{kustomize-version}_windows_amd64.tar.gz[Download]
+
+|===
+
+The following CLI tools are optional for running the exercises in this tutorial.
+Although they are used in the tutorial, you could use others without any problem.
+
+[cols="4*^,4*.",options="header,+attributes"]
+|===
+|**Tool**|**macOS**|**Fedora**|**Windows**
+
+| https://github.com/mikefarah/yq[yq v2.4.1]
+| https://github.com/mikefarah/yq/releases/download/2.4.1/yq_darwin_amd64[Download]
+| https://github.com/mikefarah/yq/releases/download/2.4.1/yq_linux_amd64[Download]
+| https://github.com/mikefarah/yq/releases/download/2.4.1/yq_windows_amd64.exe[Download]
+
+| https://github.com/stedolan/jq[jq v1.6.0]
+| https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64[Download]
+| https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64[Download]
+| https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe[Download]
+
+| watch
+| `brew install watch`
+| `dnf install procps-ng`
+|
+
+|===
+
+
+[#downloadtutorial]
+== Download Tutorial Source Files
+
+:tutorial-url: https://github.com/redhat-scholars/argocd-tutorial.git
+:folder: gitops
+include::https://raw.githubusercontent.com/redhat-developer-demos/rhd-tutorial-common/master/download-sources.adoc[]
+
+
+[#kubernetes]
+== Setup OpenShift / Kubernetes Cluster
+
+:profile: gitops
+
+include::https://raw.githubusercontent.com/redhat-developer-demos/rhd-tutorial-common/master/kubernetes-setup.adoc[]
+
+Now you're ready to install Argo CD on Kubernetes.
+
+[#install_argocd]
+== Argo CD Installation
+
+In this section we will be exploring how to install Argo CD on Minikube, and how to install it on OpenShift with the OpenShift GitOps Operator.
+
+[tabs, subs="attributes+,+macros"]
+====
+Minikube::
++
+--
+In the minikube guide, an Argo CD upstream deployment will be installed and used.
+
+Enable the Ingress Addon for Minikube:
+
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+minikube addons enable ingress -p {profile}
+----
+
+Check that the addon has been enabled:
+
+[.console-output]
+[source,bash,subs="attributes+,+macros"]
+----
+🌟  The 'ingress' addon is enabled
+----
+
+Install ArgoCD and check that every pod is running properly in the argocd namespace:
+
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+----
+
+[NOTE]
+======
+It will take few mins for the ArgoCD components to be installed, you can watch the status using the command:
+
+[.console-input]
+[source,bash,subs="+macros,attributes+"]
+----
+watch kubectl get pods -n argocd
+----
+
+You can use kbd:[Ctrl+c] to terminate the watch
+======
+
+A successful deployment of ArgoCD will show the following pods:
+
+[.console-output]
+[source,bash]
+----
+NAME                                  READY   STATUS    RESTARTS   AGE
+argocd-application-controller-0       1/1     Running   0          2m18s
+argocd-dex-server-5dd657bd9-2r24r     1/1     Running   0          2m19s
+argocd-redis-759b6bc7f4-bnljg         1/1     Running   0          2m19s
+argocd-repo-server-6c495f858f-p5267   1/1     Running   0          2m18s
+argocd-server-859b4b5578-cv2qx        1/1     Running   0          2m18s
+----
+
+Patch the ArgoCD service from ClusterIP to a LoadBalancer:
+
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+----
+
+Now with the minikube service list you can check the argocd service exposed:
+
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+minikube -p {profile} service list | grep argocd
+----
+
+--
+OpenShift::
++
+--
+ArgoCD is supported in OpenShift 4.7 by **Red Hat OpenShift GitOps** operator.
+
+To install it, you need to follow the instructions from link:https://docs.openshift.com/container-platform/4.10/cicd/gitops/installing-openshift-gitops.html#installing-gitops-operator-in-web-console_installing-openshift-gitops[OpenShift GitOps installation documentation,window='_blank']. A summary of the documentation is provided below:
+
+[NOTE]
+======
+The ability to install Operators is limited to users with the `cluster-admin` role assigned to them. Make sure to login as a user with the necessary privileges to install the Operator.
+======
+
+. Switch to the *Administrator perspective* in the OpenShift web console.
+. Navigate to *Operators* -> *OperatorHub* using the menu on the left.
+. Search for OpenShift GitOps in OperatorHub.
++
+image::ocp-install1.png[OperatorHub]
+. Click the *Red Hat OpenShift GitOps* tile.
+. Select the *Stable* channel.
++
+image::ocp-install2.png[Install GitOps Operator]
+. Click the *Install* button.
++
+image::ocp-install3.png[Install version]
+. Wait for the installation process to complete.
++
+image::ocp-install4.png[OpenShift GitOps Installed]
+. Login to the cluster using the `oc` client. You can copy a login command from the OpenShift web console:
++
+image::ocp-install5.png[OpenShift Login Command]
+. Verify that all the required Pods have been deployed in `openshift-gitops` namespace using the following command:
++
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+oc get pods -n openshift-gitops
+----
+The output should show a list of Pods similar to this:
++
+[.console-output]
+[source,bash,subs="attributes+,+macros"]
+----
+NAME                                                    READY   STATUS    RESTARTS   AGE
+argocd-cluster-application-controller-6f548f74b-48bvf   1/1     Running   0          54s
+argocd-cluster-redis-6cf68d494d-9qqq4                   1/1     Running   0          54s
+argocd-cluster-repo-server-85b9d68f9b-4hj52             1/1     Running   0          54s
+argocd-cluster-server-78467b647-8lcv9                   1/1     Running   0          54s
+cluster-86f8d97979-lfdhv                                1/1     Running   0          56s
+kam-7ff6f58c-2jxkm                                      1/1     Running   0          55s
+----
++
+. Verify that the Operator is listed when you issue the following command: 
++
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+oc get operators
+----
+This should have the following output.
++
+[.console-output]
+[source,bash,subs="attributes+,+macros"]
+----
+NAME                                                  AGE
+openshift-gitops-operator.openshift-operators         25m
+openshift-pipelines-operator-rh.openshift-operators   25m
+----
+. Give the ServiceAccount for ArgoCD the ability to manage the cluster:
++
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+oc adm policy add-cluster-role-to-user cluster-admin -z openshift-gitops-argocd-application-controller -n openshift-gitops
+----
+
+That's it! You learned how to install an Operator on OpenShift using OperatorHub, and how to use administrative commands via `oc adm` to apply cluster roles to users.
