@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "fist part"
+
+
 read -p 'Enter a : ' a
 
 read -p 'Enter b : ' b
@@ -20,3 +23,23 @@ mod=$((a % b))
 echo Modulus of a and b are $mod
 
 
+echo "second part"
+
+
+a=10
+b=20
+
+val=`expr $a + $b`
+echo "a + b : $val"
+
+val=`expr $a - $b`
+echo "a - b : $val"
+
+val=`expr $a \* $b`
+echo "a * b : $val"
+
+val=`expr $b / $a`
+echo "b / a : $val"
+
+val=`expr $b % $a`
+echo "b % a : $val"
