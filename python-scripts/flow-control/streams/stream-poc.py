@@ -1,10 +1,17 @@
 
 from lazy_streams import stream
 
-data = range(100)
+s = stream(range(10))
 
-s = stream(data)
+print(s.reverse().filter(lambda x: x%2 != 0).to_list())
 
 
-print (s.reverse().filter(lambda x: (x+1)%2 == 0).map(lambda x: x*x).map(lambda x: "Item %d" % x).last_or_else("Nothing here"))
+print("min:  ", s.min())
+
+print("max:  ", s.max())
+
+print("size: ", s.size())
+
+
+print(s.reduce(lambda x,y: x+y))
 
