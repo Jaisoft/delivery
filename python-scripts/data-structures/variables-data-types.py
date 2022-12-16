@@ -12,4 +12,5 @@ print(x)
 print(type(x)) 
 x = True
 print(x)
-print(type(x))  
+print(type(x))
+

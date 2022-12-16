@@ -10,5 +10,3 @@ tar -czf $FILE /Users/jaisoft/Documents/bashScriptProjects
 
 ls
 
-
-
